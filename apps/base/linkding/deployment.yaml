@@ -23,12 +23,9 @@ spec:
           image: sissbruecker/linkding:1.31.0
           ports:
             - containerPort: 9090
-
-          # envFrom:
-          #   # - configMapRef:
-          #   #     name: linkding-configmap
-          #   - secretRef:
-          #       name: linkding-container-env
+          envFrom:
+            - secretRef:
+                name: user-secret
 
           securityContext:
             allowPrivilegeEscalation: false
