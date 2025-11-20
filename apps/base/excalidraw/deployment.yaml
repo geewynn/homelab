@@ -17,15 +17,23 @@ spec:
         - name: excalidraw
           image: excalidraw/excalidraw:latest
           ports:
-            - containerPort: 5000
-
+            - containerPort: 80 
           securityContext:
             allowPrivilegeEscalation: false
-
+            readOnlyRootFilesystem: true
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
           volumeMounts:
-            - name: excalidraw-data
-              mountPath: /etc/excalidraw/data
+            - mountPath: /var/cache/nginx
+              name: nginx-cache
+            - mountPath: /var/run
+              name: nginx-run
       volumes:
-        - name: excalidraw-data
-          persistentVolumeClaim:
-            claimName: excalidraw-data-pvc
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
