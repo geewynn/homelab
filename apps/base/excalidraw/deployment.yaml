@@ -17,7 +17,7 @@ spec:
         - name: excalidraw
           image: excalidraw/excalidraw:latest
           ports:
-            - containerPort: 9090
+            - containerPort: 5000
           envFrom:
             - secretRef:
                 name: user-secret
