@@ -18,9 +18,6 @@ spec:
           image: excalidraw/excalidraw:latest
           ports:
             - containerPort: 5000
-          envFrom:
-            - secretRef:
-                name: user-secret
 
           securityContext:
             allowPrivilegeEscalation: false
