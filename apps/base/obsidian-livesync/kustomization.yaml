@@ -3,6 +3,5 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - couchdb-statefulset.yaml
-  - couchdb-secret.yaml
   - couchdb-config.yaml
   - service.yaml
