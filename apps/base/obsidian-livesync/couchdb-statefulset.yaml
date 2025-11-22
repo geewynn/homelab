@@ -14,6 +14,10 @@ spec:
       labels:
         app: couchdb
     spec:
+      securityContext:
+        runAsUser: 5984   # CouchDB user ID
+        runAsGroup: 5984  # CouchDB group ID
+        fsGroup: 5984
       containers:
         - name: couchdb
           image: couchdb:3.3.3
