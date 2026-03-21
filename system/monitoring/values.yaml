@@ -5,6 +5,7 @@ kube-prometheus-stack:
     adminPassword: ""  # Set via: kubectl create secret generic grafana-admin --from-literal=password=YOUR_PASSWORD -n monitoring
     admin:
       existingSecret: grafana-admin
+      userKey: admin-user
       passwordKey: password
     sidecar:
       dashboards:
