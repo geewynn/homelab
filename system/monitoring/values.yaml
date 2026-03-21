@@ -1,0 +1,52 @@
+kube-prometheus-stack:
+  grafana:
+    enabled: true
+    adminUser: admin
+    adminPassword: ""  # Set via: kubectl create secret generic grafana-admin --from-literal=password=YOUR_PASSWORD -n monitoring
+    admin:
+      existingSecret: grafana-admin
+      passwordKey: password
+    sidecar:
+      dashboards:
+        enabled: true
+        searchNamespace: ALL
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        url: http://loki.loki:3100
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        traefik.ingress.kubernetes.io/router.entrypoints: web
+      hosts:
+        - grafana.owoicho.org
+
+  prometheus:
+    prometheusSpec:
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      ruleSelectorNilUsesHelmValues: false
+      probeSelectorNilUsesHelmValues: false
+      retention: 15d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            storageClassName: longhorn
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 20Gi
+
+  alertmanager:
+    enabled: true
+
+  # k3s-specific
+  kubeProxy:
+    enabled: false
+  kubeEtcd:
+    enabled: true
+    service:
+      enabled: true
+      port: 2381
+      targetPort: 2381
