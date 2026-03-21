@@ -1,0 +1,21 @@
+longhorn:
+  defaultSettings:
+    defaultReplicaCount: 2
+    defaultDataLocality: best-effort
+    storageMinimalAvailablePercentage: 15
+    nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
+
+  persistence:
+    defaultClass: true
+    defaultClassReplicaCount: 2
+
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    host: longhorn.owoicho.org
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+
+  metrics:
+    serviceMonitor:
+      enabled: true
