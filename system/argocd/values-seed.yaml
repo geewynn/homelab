@@ -19,7 +19,7 @@ argocd-apps:
       generators:
         - git:
             repoURL: &repoURL https://github.com/geewynn/homelab
-            revision: &revision main
+            revision: &revision homedev
             directories:
               - path: system/*
               - path: platform/*
