@@ -1,4 +1,19 @@
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: cloudflared
+data:
+  config.yaml: |
+    tunnel: homelab
+    no-autoupdate: true
+    metrics: 0.0.0.0:2000
+    ingress:
+      - hostname: "*.owoicho.org"
+        service: http://traefik.traefik:80
+      - service: http_status:404
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,21 +36,23 @@ spec:
       containers:
         - name: cloudflared
           image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config.yaml
+            - run
+            - --token
+            - $(TUNNEL_TOKEN)
           env:
             - name: TUNNEL_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: cloudflared-tunnel-token
                   key: token
-          command:
-            - cloudflared
-            - tunnel
-            - --no-autoupdate
-            - --loglevel
-            - info
-            - --metrics
-            - 0.0.0.0:2000
-            - run
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared
+              readOnly: true
           livenessProbe:
             httpGet:
               path: /ready
@@ -43,3 +60,7 @@ spec:
             failureThreshold: 1
             initialDelaySeconds: 10
             periodSeconds: 10
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflared-config
