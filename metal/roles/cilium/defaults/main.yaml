@@ -1,0 +1,22 @@
+cilium_repo_url: https://helm.cilium.io
+cilium_version: "1.19.1"
+cilium_namespace: kube-system
+cilium_values:
+  operator:
+    replicas: 1
+  kubeProxyReplacement: true
+  socketLB:
+    hostNamespaceOnly: true
+  l2announcements:
+    enabled: true
+  ipam:
+    operator:
+      clusterPoolIPv4PodCIDRList:
+        - "10.42.0.0/16"
+  k8sServiceHost: 127.0.0.1
+  k8sServicePort: 6444
+  hubble:
+    relay:
+      enabled: true
+    ui:
+      enabled: true

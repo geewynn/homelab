@@ -1,0 +1,117 @@
+- name: Get Docker info
+  community.docker.docker_host_info: {}
+  register: docker_info_result
+
+- name: Ensure Docker is running on a supported operating system
+  ansible.builtin.fail:
+    msg: >
+      Docker host networking driver only works on Linux hosts, not
+      supported on Docker Desktop for Mac or Windows.
+  when:
+    - docker_info_result.host_info.OperatingSystem == "Docker Desktop"
+
+- name: Download Ubuntu Server ISO
+  ansible.builtin.get_url:
+    url: "{{ iso_url }}"
+    dest: "{{ role_path }}/files/data/iso/{{ iso_url | basename }}"
+    checksum: "{{ iso_checksum }}"
+    mode: 0644
+  register: iso
+
+- name: Extract boot image
+  ansible.builtin.command:
+    cmd: >
+      xorriso -osirrox on -indev {{ iso.dest }}
+      -extract / {{ role_path }}/files/data/os
+    creates: "{{ role_path }}/files/data/os/casper/vmlinuz"
+
+- name: Download grub-efi-amd64-signed package
+  ansible.builtin.command:
+    cmd: apt download grub-efi-amd64-signed
+    chdir: /tmp
+  become: true
+
+- name: Extract netboot GRUB EFI binary from package
+  ansible.builtin.shell:
+    cmd: >
+      dpkg-deb --fsys-tarfile /tmp/grub-efi-amd64-signed*.deb |
+      tar x ./usr/lib/grub/x86_64-efi-signed/grubnetx64.efi.signed -O >
+      {{ role_path }}/files/data/os/EFI/boot/grubx64.efi
+  become: true
+
+- name: Set correct permissions on grubx64.efi
+  ansible.builtin.file:
+    path: "{{ role_path }}/files/data/os/EFI/boot/grubx64.efi"
+    mode: 0644
+    owner: godwin
+  become: true
+
+- name: Generate dnsmasq config
+  ansible.builtin.template:
+    src: dnsmasq.conf.j2
+    dest: "{{ role_path }}/files/data/pxe-config/dnsmasq.conf"
+    mode: 0644
+
+- name: Generate GRUB config
+  ansible.builtin.template:
+    src: grub.cfg.j2
+    dest: "{{ role_path }}/files/data/pxe-config/grub.cfg"
+    mode: 0644
+
+- name: Ensure per-node autoinstall directory exists
+  ansible.builtin.file:
+    path: "{{ role_path }}/files/data/init-config/{{ hostvars[item]['mac'] }}"
+    state: directory
+    mode: 0755
+  loop: "{{ groups['metal'] }}"
+
+- name: Generate autoinstall config for each machine
+  ansible.builtin.template:
+    src: autoinstall.yaml.j2
+    dest: "{{ role_path }}/files/data/init-config/{{ hostvars[item]['mac'] }}/user-data"
+    mode: 0644
+  loop: "{{ groups['metal'] }}"
+
+- name: Generate empty meta-data for each machine
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ role_path }}/files/data/init-config/{{ hostvars[item]['mac'] }}/meta-data"
+    mode: 0644
+  loop: "{{ groups['metal'] }}"
+
+- name: Start the ephemeral PXE server
+  community.docker.docker_compose_v2:
+    project_src: "{{ role_path }}/files"
+    state: present
+    build: always
+
+- name: Send Wake-on-LAN magic packets
+  community.general.wakeonlan:
+    mac: "{{ hostvars[item]['mac'] }}"
+  loop: "{{ groups['metal'] }}"
+  delegate_to: localhost
+
+- name: Wait for nodes to go offline (installer restarting)
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[item]['ansible_host'] }}"
+    port: 22
+    state: stopped
+    timeout: 300
+    delay: 10
+  loop: "{{ groups['metal'] }}"
+  delegate_to: localhost
+
+- name: Wait for all nodes to come back up after install
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[item]['ansible_host'] }}"
+    port: 22
+    timeout: 1800
+    delay: 60
+  loop: "{{ groups['metal'] }}"
+  delegate_to: localhost
+
+
+- name: Stop the ephemeral PXE server
+  community.docker.docker_compose_v2:
+    project_src: "{{ role_path }}/files"
+    state: absent

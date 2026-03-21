@@ -1,0 +1,9 @@
+all:
+  children:
+    metal:
+      hosts:
+        node1:
+          ansible_host: 10.0.0.x
+          ansible_user: youruser
+          mac: "xx:xx:xx:xx:xx:xx"
+          network_interface: enp1s0

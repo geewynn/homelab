@@ -1,0 +1,13 @@
+- name: Create Kubernetes cluster
+  hosts: metal
+  roles:
+    - prerequisites
+    - k3s
+
+- name: Install Kubernetes addons
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  roles:
+    - cilium

@@ -1,0 +1,55 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  locale: en_US.UTF-8
+
+  keyboard:
+    layout: us
+
+  network:
+    version: 2
+    ethernets:
+      {{ hostvars[item]['network_interface'] }}:
+        dhcp4: false
+        addresses:
+          - {{ hostvars[item]['ansible_host'] }}/24
+        gateway4: {{ network_gateway }}
+        nameservers:
+          addresses:
+            - {{ dns_server }}
+
+  storage:
+    layout:
+      name: lvm
+      sizing-policy: all
+      password: "{{ disk_encryption_password }}"
+
+  identity:
+    hostname: {{ hostvars[item]['inventory_hostname'] }}
+    username: {{ hostvars[item]['ansible_user'] }}
+    password: "{{ admin_password_hash }}"
+
+  ssh:
+    install-server: true
+    authorized-keys:
+      - {{ ssh_public_key }}
+    allow-pw: false
+
+  updates: security
+
+  late-commands:
+  - curtin in-target -- apt-get install -y clevis-luks clevis-tpm2 clevis-initramfs
+  - |
+    cat <<'EOF' > /target/etc/rc.local
+    #!/bin/bash
+    if ! clevis luks list -d /dev/sda3 2>/dev/null | grep -q tpm2; then
+      clevis luks bind -f -d /dev/sda3 tpm2 '{"pcr_bank":"sha256","pcr_ids":"0,1,7"}' <<< "{{ disk_encryption_password }}"
+      update-initramfs -u -k all
+      systemctl disable rc-local.service
+    fi
+    EOF
+    chmod +x /target/etc/rc.local
+    curtin in-target -- systemctl enable rc-local.service
+
+  shutdown: reboot

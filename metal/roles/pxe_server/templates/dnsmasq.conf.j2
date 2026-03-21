@@ -1,0 +1,18 @@
+port=0
+{% if dhcp_proxy == true %}
+dhcp-range={{ ansible_facts['default_ipv4']['address'] }},proxy
+pxe-service=X86-64_EFI,"Boot From Network (UEFI)",grubx64.efi
+{% else %}
+dhcp-range={{ ansible_facts['default_ipv4']['network'] | ansible.netcommon.ipmath(1) }},{{ ansible_facts['default_ipv4']['broadcast'] | ansible.netcommon.ipmath(-1) }},{{ ansible_facts['default_ipv4']['netmask'] }},12h
+dhcp-option=3,{{ ansible_facts['default_ipv4']['gateway'] }}
+dhcp-match=set:efi-x86_64,option:client-arch,7
+dhcp-match=set:efi-x86_64,option:client-arch,9
+dhcp-boot=tag:efi-x86_64,grubx64.efi
+{% endif %}
+log-queries
+log-dhcp
+log-facility=-
+enable-tftp
+tftp-root=/tftp
+
+

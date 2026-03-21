@@ -1,0 +1,50 @@
+- name: Install Cilium
+  kubernetes.core.helm:
+    name: cilium
+    chart_ref: cilium
+    chart_repo_url: "{{ cilium_repo_url }}"
+    chart_version: "{{ cilium_version }}"
+    release_namespace: "{{ cilium_namespace }}"
+    values: "{{ cilium_values }}"
+    kubeconfig: "{{ playbook_dir }}/kubeconfig.yaml"
+    wait: true
+    wait_timeout: 300s
+
+- name: Wait for Cilium pods to be ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: "{{ cilium_namespace }}"
+    label_selectors:
+      - k8s-app=cilium
+    kubeconfig: "{{ playbook_dir }}/kubeconfig.yaml"
+  register: cilium_pods
+  until:
+    - cilium_pods.resources is defined
+    - cilium_pods.resources | selectattr('status.phase', 'equalto', 'Running') | list | length >= 1
+  retries: 15
+  delay: 10
+
+- name: Wait for Cilium CRDs
+  kubernetes.core.k8s_info:
+    kind: CustomResourceDefinition
+    name: "{{ item }}"
+    kubeconfig: "{{ playbook_dir }}/kubeconfig.yaml"
+  loop:
+    - ciliuml2announcementpolicies.cilium.io
+    - ciliumloadbalancerippools.cilium.io
+  register: crd
+  until:
+    - crd.resources is defined
+    - crd.resources | length > 0
+  retries: 10
+  delay: 10
+
+- name: Apply Cilium L2 announcement policy
+  kubernetes.core.k8s:
+    template: ciliuml2announcementpolicy.yaml.j2
+    kubeconfig: "{{ playbook_dir }}/kubeconfig.yaml"
+
+- name: Apply Cilium LoadBalancer IP pool
+  kubernetes.core.k8s:
+    template: ciliumloadbalancerippool.yaml.j2
+    kubeconfig: "{{ playbook_dir }}/kubeconfig.yaml"
