@@ -18,4 +18,4 @@ longhorn:
 
   metrics:
     serviceMonitor:
-      enabled: true
+      enabled: false
