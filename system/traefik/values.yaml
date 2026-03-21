@@ -1,0 +1,30 @@
+traefik:
+  deployment:
+    kind: DaemonSet
+
+  service:
+    type: LoadBalancer
+
+  providers:
+    kubernetesCRD:
+      enabled: true
+      allowCrossNamespace: true
+    kubernetesIngress:
+      enabled: true
+      publishedService:
+        enabled: true
+
+  ports:
+    web:
+      redirectTo:
+        port: websecure
+        priority: 10
+    websecure:
+      tls:
+        enabled: true
+
+  logs:
+    general:
+      level: INFO
+    access:
+      enabled: true
