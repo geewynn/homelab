@@ -22,6 +22,18 @@ spec:
       automountServiceAccountToken: true
       dnsPolicy: ClusterFirst
       enableServiceLinks: true
+      initContainers:
+        - name: init-config
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - cp /config-source/* /config/
+          volumeMounts:
+            - mountPath: /config-source
+              name: homepage-config-source
+            - mountPath: /config
+              name: homepage-config
       containers:
         - name: homepage
           image: "ghcr.io/gethomepage/homepage:latest"
@@ -54,36 +66,11 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 15
           volumeMounts:
-            - mountPath: /app/config/custom.js
+            - mountPath: /app/config
               name: homepage-config
-              subPath: custom.js
-            - mountPath: /app/config/custom.css
-              name: homepage-config
-              subPath: custom.css
-            - mountPath: /app/config/bookmarks.yaml
-              name: homepage-config
-              subPath: bookmarks.yaml
-            - mountPath: /app/config/docker.yaml
-              name: homepage-config
-              subPath: docker.yaml
-            - mountPath: /app/config/kubernetes.yaml
-              name: homepage-config
-              subPath: kubernetes.yaml
-            - mountPath: /app/config/services.yaml
-              name: homepage-config
-              subPath: services.yaml
-            - mountPath: /app/config/settings.yaml
-              name: homepage-config
-              subPath: settings.yaml
-            - mountPath: /app/config/widgets.yaml
-              name: homepage-config
-              subPath: widgets.yaml
-            - mountPath: /app/config/logs
-              name: logs
       volumes:
-        - name: homepage-config
+        - name: homepage-config-source
           configMap:
             name: homepage
-        - name: logs
+        - name: homepage-config
           emptyDir: {}
-
