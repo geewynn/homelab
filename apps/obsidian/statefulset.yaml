@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: couchdb
+  namespace: obsidian-livesync
+spec:
+  serviceName: "couchdb"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: couchdb
+  template:
+    metadata:
+      labels:
+        app: couchdb
+    spec:
+      securityContext:
+        runAsUser: 5984
+        runAsGroup: 5984
+        fsGroup: 5984
+      containers:
+        - name: couchdb
+          image: couchdb:3.3.3
+          ports:
+            - containerPort: 5984
+          env:
+            - name: COUCHDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb-creds
+                  key: admin-user
+            - name: COUCHDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: couchdb-creds
+                  key: admin-password
+          volumeMounts:
+            - name: data
+              mountPath: /opt/couchdb/data
+            - name: config
+              mountPath: /opt/couchdb/etc/local.d/10-custom.ini
+              subPath: local.ini
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5984
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: couchdb-pvc
+        - name: config
+          configMap:
+            name: couchdb-config
