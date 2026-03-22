@@ -26,6 +26,10 @@ spec:
           envFrom:
             - secretRef:
                 name: user-secret
+          
+          env:
+            - name: LD_CSRF_TRUSTED_ORIGINS
+              value: "https://linkding.owoicho.org"
 
           securityContext:
             allowPrivilegeEscalation: false
