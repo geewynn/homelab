@@ -1,0 +1,37 @@
+# Vault password file (if you use one instead of --ask-vault-pass)
+.vault_pass
+.vault_password
+
+# Downloaded ISO and extracted OS files
+metal/roles/pxe_server/files/data/iso/
+metal/roles/pxe_server/files/data/os/
+
+# Generated configs (rendered from templates at runtime)
+metal/roles/pxe_server/files/data/pxe-config/
+metal/roles/pxe_server/files/data/init-config/
+
+# SSH keys
+*.pem
+id_ed25519
+id_rsa
+
+# Python
+*.pyc
+__pycache__/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Ansible retry files
+*.retry
+prod.yml
+kubeconfig.yaml
+cilium-leg
+charts/
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+terraform.tfvars

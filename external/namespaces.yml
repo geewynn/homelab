@@ -1,0 +1,41 @@
+- hosts: localhost
+  tasks:
+    - name: Ensure required namespaces exist
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: "{{ item }}"
+        state: present
+      loop:
+        - cloudflared
+        - monitoring
+
+    - name: Check if Grafana admin secret exists
+      kubernetes.core.k8s_info:
+        kind: Secret
+        namespace: monitoring
+        name: grafana-admin
+      register: grafana_secret
+
+    - name: Prompt for Grafana password
+      ansible.builtin.pause:
+        prompt: "Enter Grafana admin password"
+        echo: false
+      register: grafana_password_input
+      when: grafana_secret.resources | length == 0
+
+    - name: Create Grafana admin secret
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: grafana-admin
+            namespace: monitoring
+          type: Opaque
+          stringData:
+            admin-user: admin
+            password: "{{ grafana_password_input.user_input }}"
+      when: grafana_secret.resources | length == 0
+      no_log: true
