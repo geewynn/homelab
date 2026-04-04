@@ -8,13 +8,6 @@ data:
     <clickhouse>
       <storage_configuration>
         <disks>
-          <!-- Hot: local PV managed by the operator (mounted at /var/lib/clickhouse) -->
-          <hot>
-            <type>local</type>
-            <path>/var/lib/clickhouse/</path>
-          </hot>
-
-          <!-- Cold: S3-compatible object storage -->
           <cold>
             <type>object_storage</type>
             <object_storage_type>s3</object_storage_type>
@@ -26,19 +19,10 @@ data:
         </disks>
 
         <policies>
-          <!-- Default: local only (unchanged behavior) -->
-          <default>
-            <volumes>
-              <main>
-                <disk>hot</disk>
-              </main>
-            </volumes>
-          </default>
-
           <hot_cold>
             <volumes>
               <hot_volume>
-                <disk>hot</disk>
+                <disk>default</disk>
                 <max_data_part_size_bytes>1073741824</max_data_part_size_bytes>
               </hot_volume>
               <cold_volume>
