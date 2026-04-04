@@ -44,7 +44,7 @@ spec:
             key: secret_access_key
     volumeMounts:
       - name: storage-config
-        mountPath: /etc/clickhouse-server/config.d/storage.xml
+        mountPath: /etc/clickhouse-server/config.d/
         subPath: storage.xml
   podTemplate:
     volumes:
