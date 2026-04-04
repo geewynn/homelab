@@ -46,7 +46,6 @@ spec:
       - name: storage-config
         mountPath: /etc/clickhouse-server/config.d/storage.xml
         subPath: storage.xml
-        readOnly: true
   podTemplate:
     volumes:
       - name: storage-config
