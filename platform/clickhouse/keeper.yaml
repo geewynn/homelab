@@ -25,4 +25,4 @@ spec:
       enabled: true
       required: true
       serverCertSecret:
-        name: <keeper-certificate-secret>
+        name: clickhouse-keeper-tls
