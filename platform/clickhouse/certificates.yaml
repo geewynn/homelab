@@ -1,0 +1,47 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: clickhouse-selfsigned
+  namespace: clickhouse
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clickhouse-server-tls
+  namespace: clickhouse
+spec:
+  secretName: clickhouse-server-tls
+  issuerRef:
+    name: clickhouse-selfsigned
+    kind: Issuer
+  commonName: clickhouse
+  dnsNames:
+    - clickhouse
+    - clickhouse.clickhouse
+    - clickhouse.clickhouse.svc
+    - clickhouse.clickhouse.svc.cluster.local
+    - "*.clickhouse.clickhouse.svc.cluster.local"
+  duration: 8760h   # 1 year
+  renewBefore: 720h  # 30 days
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: clickhouse-keeper-tls
+  namespace: clickhouse
+spec:
+  secretName: clickhouse-keeper-tls
+  issuerRef:
+    name: clickhouse-selfsigned
+    kind: Issuer
+  commonName: clickhouse-keeper
+  dnsNames:
+    - clickhouse-keeper
+    - clickhouse-keeper.clickhouse
+    - clickhouse-keeper.clickhouse.svc
+    - clickhouse-keeper.clickhouse.svc.cluster.local
+    - "*.clickhouse-keeper.clickhouse.svc.cluster.local"
+  duration: 8760h
+  renewBefore: 720h

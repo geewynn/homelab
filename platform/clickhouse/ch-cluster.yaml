@@ -1,0 +1,66 @@
+apiVersion: clickhouse.com/v1alpha1
+kind: ClickHouseCluster
+metadata:
+  name: clickhouse
+  namespace: clickhouse
+spec:
+  replicas: 1
+  shards: 1
+  keeperClusterRef:
+    name: clickhouse-keeper
+  dataVolumeClaimSpec:
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Gi
+  containerTemplate:
+    image:
+      repository: clickhouse/clickhouse-server
+      tag: "26.3"
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "2"
+        memory: 4Gi
+    env:
+      - name: S3_ENDPOINT
+        valueFrom:
+          secretKeyRef:
+            name: clickhouse-s3-credentials
+            key: endpoint
+      - name: S3_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: clickhouse-s3-credentials
+            key: access_key_id
+      - name: S3_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: clickhouse-s3-credentials
+            key: secret_access_key
+    volumeMounts:
+      - name: storage-config
+        mountPath: /etc/clickhouse-server/config.d/storage.xml
+        subPath: storage.xml
+        readOnly: true
+  podTemplate:
+    volumes:
+      - name: storage-config
+        configMap:
+          name: clickhouse-storage-config
+  settings:
+    tls:
+      enabled: true
+      required: true
+      serverCertSecret:
+        name: clickhouse-server-tls
+    defaultUserPassword:
+      passwordType: password_sha256_hex
+      secret:
+        name: clickhouse-default-password
+        key: password
+    
