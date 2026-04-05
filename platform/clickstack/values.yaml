@@ -29,5 +29,7 @@ clickstack:
       enabled: true
       host: "hyperdx.owoicho.org"
       ingressClassName: traefik
+      path: /
+      pathType: Prefix
       annotations:
         traefik.ingress.kubernetes.io/router.entrypoints: web
