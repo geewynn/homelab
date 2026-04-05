@@ -7,9 +7,12 @@ clickstack:
 
   hyperdx:
     config:
-      FRONTEND_URL: "http://hyperdx.owoicho.org"
+      FRONTEND_URL: "https://hyperdx.owoicho.org"
 
     deployment:
+      env:
+        - name: TRUST_PROXY
+          value: "1"
       replicas: 1
       resources:
         limits:
