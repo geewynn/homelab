@@ -1,35 +1,34 @@
-clickstack:
-  clickhouse:
-    enabled: false
+clickhouse:
+  enabled: false
 
-  otel-collector:
-    enabled: false
+otel-collector:
+  enabled: false
 
-  hyperdx:
-    frontendUrl: "https://hyperdx.owoicho.org"
+hyperdx:
+  frontendUrl: "https://hyperdx.owoicho.org"
     
-    deployment:
-      replicas: 1
-      resources:
-        limits:
-          cpu: "1"
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+  deployment:
+    replicas: 1
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
 
-    useExistingSecret: true
-    existingSecret: "clickstack-secrets"
+  useExistingSecret: true
+  existingSecret: "clickstack-secrets"
  
-    useExistingConfigSecret: true
-    existingConfigSecret: "clickstack-extra-config"
-    existingConfigConnectionsKey: "connections.json"
+  useExistingConfigSecret: true
+  existingConfigSecret: "clickstack-extra-config"
+  existingConfigConnectionsKey: "connections.json"
  
-    ingress:
-      enabled: true
-      host: "hyperdx.owoicho.org"
-      ingressClassName: traefik
-      path: /
-      pathType: Prefix
-      annotations:
-        traefik.ingress.kubernetes.io/router.entrypoints: web
+  ingress:
+    enabled: true
+    host: "hyperdx.owoicho.org"
+    ingressClassName: traefik
+    path: /
+    pathType: Prefix
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web  
