@@ -127,6 +127,7 @@ clickstack:
       enabled: true
       host: "hyperdx.owoicho.org"
       ingressClassName: traefik
+      TRUST_PROXY: "1"
       path: /
       pathType: Prefix
       annotations:
