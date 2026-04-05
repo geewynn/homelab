@@ -5,8 +5,9 @@ otel-collector:
   enabled: false
 
 hyperdx:
-  frontendUrl: "https://hyperdx.owoicho.org"
-    
+  config:
+    FRONTEND_URL: "https://hyperdx.owoicho.org"
+
   deployment:
     replicas: 1
     resources:
@@ -16,14 +17,12 @@ hyperdx:
       requests:
         cpu: 500m
         memory: 1Gi
+    useExistingConfigSecret: true
+    existingConfigSecret: "clickstack-extra-config"
+    existingConfigConnectionsKey: "connections.json"
+    defaultConnections: ""
+    defaultSources: ""
 
-  useExistingSecret: true
-  existingSecret: "clickstack-secrets"
- 
-  useExistingConfigSecret: true
-  existingConfigSecret: "clickstack-extra-config"
-  existingConfigConnectionsKey: "connections.json"
- 
   ingress:
     enabled: true
     host: "hyperdx.owoicho.org"
@@ -31,4 +30,4 @@ hyperdx:
     path: /
     pathType: Prefix
     annotations:
-      traefik.ingress.kubernetes.io/router.entrypoints: web  
+      traefik.ingress.kubernetes.io/router.entrypoints: web
