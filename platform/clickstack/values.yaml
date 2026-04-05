@@ -7,7 +7,7 @@ clickstack:
 
   hyperdx:
     config:
-      FRONTEND_URL: "https://hyperdx.owoicho.org"
+      FRONTEND_URL: "http://hyperdx.owoicho.org"
 
     deployment:
       replicas: 1
