@@ -22,7 +22,7 @@ clickstack:
     existingSecret: "clickstack-secrets"
  
     useExistingConfigSecret: true
-    existingConfigSecret: "clickstack-config"
+    existingConfigSecret: "clickstack-extra-config"
     existingConfigConnectionsKey: "connections.json"
  
     ingress:
