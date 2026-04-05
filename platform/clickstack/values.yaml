@@ -21,6 +21,7 @@ clickstack:
       useExistingConfigSecret: true
       existingConfigSecret: "clickstack-extra-config"
       existingConfigConnectionsKey: "connections.json"
+      existingConfigSourcesKey: "sources.json"
       defaultConnections: ""
       defaultSources: |
         [
