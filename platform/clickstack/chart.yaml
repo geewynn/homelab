@@ -1,0 +1,7 @@
+apiVersion: v2
+name: clickstack
+version: 0.0.0
+dependencies:
+  - name: clickstack
+    version: "2.1.1"
+    repository: https://clickhouse.github.io/ClickStack-helm-charts
