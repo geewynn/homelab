@@ -3,4 +3,5 @@ name: cnpg
 version: 0.0.0
 dependencies:
   - name: cnpg-operators
+    version: "0.28.0"
     repository: https://cloudnative-pg.github.io/charts
