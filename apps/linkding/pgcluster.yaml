@@ -1,0 +1,27 @@
+apiVersion: postgresql.cnpg.io/1
+kind: Cluster
+metadata:
+  name: linkding-pg
+  namespace: linkding
+spec:
+  instances: 1
+  storage:
+    size: 2Gi
+    storageClass: linkding-data-sc
+  managed:
+    roles:
+      - name: linkding
+        ensure: present
+        login: true
+        passwordSecret:
+          name: linkding-pg-user
+  bootstrap:
+    initdb:
+      database: postgres
+      owner: postgres
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
