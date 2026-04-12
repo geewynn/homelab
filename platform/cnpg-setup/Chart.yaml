@@ -2,6 +2,6 @@ apiVersion: v2
 name: cnpg
 version: 0.0.0
 dependencies:
-  - name: cnpg-operators
+  - name: cloudnative-pg
     version: "0.28.0"
     repository: https://cloudnative-pg.github.io/charts
