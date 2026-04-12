@@ -5,6 +5,8 @@ metadata:
   namespace: linkding
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: linkding
@@ -14,10 +16,9 @@ spec:
         app: linkding
     spec:
       securityContext:
-        fsGroup: 33 # www-data group ID
-        runAsUser: 33 # www-data user ID
-        runAsGroup: 33 # www-data group ID
-
+        fsGroup: 33
+        runAsUser: 33
+        runAsGroup: 33
       containers:
         - name: linkding
           image: sissbruecker/linkding:1.31.0
@@ -26,14 +27,31 @@ spec:
           envFrom:
             - secretRef:
                 name: user-secret
-          
+            - secretRef:
+                name: linkding-secrets
           env:
             - name: LD_CSRF_TRUSTED_ORIGINS
               value: "https://linkding.owoicho.org"
-
+            - name: LD_DB_ENGINE
+              value: postgres
+            - name: LD_DB_HOST
+              value: linkding-pg-rw.linkding.svc
+            - name: LD_DB_PORT
+              value: "5432"
+            - name: LD_DB_DATABASE
+              value: linkding
+            - name: LD_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-pg-user
+                  key: username
+            - name: LD_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-pg-user
+                  key: password
           securityContext:
             allowPrivilegeEscalation: false
-
           volumeMounts:
             - name: linkding-data
               mountPath: /etc/linkding/data
