@@ -1,0 +1,4 @@
+- name: Install Tailscale on cluster nodes
+  hosts: metal
+  roles:
+    - tailscale

@@ -1,0 +1,22 @@
+- name: Install Tailscale
+  ansible.builtin.shell: curl -fsSL https://tailscale.com/install.sh | sh
+  args:
+    creates: /usr/bin/tailscale
+
+- name: Check current state
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+
+- name: Join the tailnet
+  when: '"Running" not in tailscale_status.stdout'
+  ansible.builtin.command:
+    argv:
+      - tailscale
+      - up
+      - --auth-key={{ tailscale_oauth_secret }}?preauthorized=true&ephemeral=false
+      - --advertise-tags=tag:k3s
+      - --hostname={{ inventory_hostname }}
+      - --accept-dns=false
+  no_log: true
