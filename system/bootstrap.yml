@@ -1,0 +1,82 @@
+- name: Bootstrap ArgoCD
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Create ArgoCD namespace
+      kubernetes.core.k8s:
+        api_version: v1
+        kind: Namespace
+        name: argocd
+        state: present
+
+    - name: Check if ArgoCD is already running
+      kubernetes.core.k8s_info:
+        kind: Pod
+        namespace: argocd
+        label_selectors:
+          - app.kubernetes.io/name=argocd-server
+        field_selectors:
+          - status.phase=Running
+      register: argocd_check
+
+    - name: Render ArgoCD manifests from Helm chart
+      kubernetes.core.helm_template:
+        chart_ref: ./argocd
+        include_crds: true
+        release_name: argocd
+        release_namespace: argocd
+        dependency_update: true
+        values_files:
+          - "argocd/values.yaml"
+          - "argocd/{{ (argocd_check.resources | length == 0) | ternary('values-seed.yaml', 'values.yaml') }}"
+      register: argocd_manifests
+
+    - name: Apply ArgoCD manifests
+      kubernetes.core.k8s:
+        resource_definition: "{{ item }}"
+        apply: true
+        server_side_apply:
+          field_manager: argocd-controller
+      loop: "{{ argocd_manifests.stdout | from_yaml_all | list }}"
+      loop_control:
+        label: "{{ item.kind | default('unknown') }}/{{ item.metadata.name | default('unknown') }}"
+      when: item is not none
+
+    - name: Wait for ArgoCD CRDs
+      kubernetes.core.k8s_info:
+        api_version: apiextensions.k8s.io/v1
+        kind: CustomResourceDefinition
+        name: "{{ item }}"
+        wait: true
+        wait_timeout: 120
+        wait_condition:
+          type: Established
+          status: "True"
+      loop:
+        - applications.argoproj.io
+        - applicationsets.argoproj.io
+
+    - name: Wait for ArgoCD server to be ready
+      kubernetes.core.k8s_info:
+        kind: Deployment
+        namespace: argocd
+        name: argocd-server
+        wait: true
+        wait_timeout: 300
+        wait_condition:
+          type: Available
+          status: "True"
+
+    - name: Get ArgoCD admin password
+      kubernetes.core.k8s_info:
+        kind: Secret
+        namespace: argocd
+        name: argocd-initial-admin-secret
+      register: argocd_secret
+
+    - name: Display ArgoCD info
+      ansible.builtin.debug:
+        msg:
+          - "✓ ArgoCD bootstrapped"
+          - "  Admin password: {{ argocd_secret.resources[0].data.password | b64decode }}"
+          - "  Port forward: kubectl port-forward svc/argocd-server -n argocd 8080:443"
