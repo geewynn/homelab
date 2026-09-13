@@ -6,6 +6,7 @@ longhorn:
     defaultReplicaCount: 2
     defaultDataLocality: best-effort
     storageMinimalAvailablePercentage: 15
+    storageOverProvisioningPercentage: 110
     nodeDownPodDeletionPolicy: delete-both-statefulset-and-deployment-pod
 
   persistence:
